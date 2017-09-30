@@ -1,0 +1,20 @@
+mongodb_url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.4.3.tgz
+mongodb_filename: mongodb-linux-x86_64-rhel70-3.4.3.tgz
+
+mongodb_port: 27017
+mongodb_database_name: jmeter
+mongodb_username: jmeter
+mongodb_password: jmeter
+mongodb_collection: employee
+
+mongodb_so_username: mongodb
+mongodb_so_group: mongodb
+
+mongodb_data_path: /data/mongodb
+mongodb_log_path: /var/log/mongodb
+
+scripts_type: 'person_data_*.json'
+mongodb_basepath: /apps/mongodb-linux-x86_64-rhel70-3.4.3
+mongodb_scripts_path: "{{mongodb_basepath}}/scripts"
+mongodb_import_exec: "{{mongodb_basepath}}/bin/mongoimport"
+

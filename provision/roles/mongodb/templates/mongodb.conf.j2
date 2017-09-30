@@ -1,0 +1,21 @@
+systemLog:
+   verbosity: 1
+   destination: file
+   path: "/var/log/mongodb/mongod.log"
+   logAppend: true
+   logRotate: rename
+   timeStampFormat: iso8601-utc
+
+storage:
+   journal:
+      enabled: true
+   dbPath: /data/mongodb
+
+processManagement:
+   fork: true
+   pidFilePath: /var/run/mongodb
+
+net:
+   port: 27017
+   maxIncomingConnections: 500
+

@@ -1,0 +1,11 @@
+---
+- copy:
+    src: jdk-8u144-linux-x64.rpm
+    dest: "{{ java_download_path }}"
+  become: true
+
+- name: install JDK via RPM file with yum
+  yum:
+    name: "{{ java_download_path }}/{{ jdk_rpm_file }}"
+    state: present
+  become: true

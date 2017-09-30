@@ -1,0 +1,104 @@
+---
+
+- name: Download mongodb package
+  get_url:
+    url: https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.4.3.tgz
+    dest: /tmp/mongodb-3.4.3.tgz
+    mode: 0440
+  become: true
+
+- name: Ensure base folder exist
+  file:
+    path: /apps
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Ensure log folder exist
+  file:
+    path: /var/log/mongodb
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Ensure data folder exist
+  file:
+    path: /data/mongodb
+    state: directory
+    mode: 0755
+  become: true
+
+- name: Unpack mongodb configuratio
+  unarchive:
+    src: /tmp/mongodb-3.4.3.tgz
+    dest: /apps/
+    remote_src: true
+  become: true
+
+- name: Ensure config folder exist
+  file:
+    path: "/apps/mongodb-linux-x86_64-rhel70-3.4.3/{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - config
+    - scripts
+  become: true
+
+- name: Copy configuration file
+  template:
+    src: mongodb.conf.j2
+    dest: /apps/mongodb-linux-x86_64-rhel70-3.4.3/config/mongodb.conf
+  become: true
+
+- name: Copy data files
+  copy:
+    src: "{{ item }}"
+    dest: "/apps/mongodb-linux-x86_64-rhel70-3.4.3/scripts"
+  with_items:
+    - zips.json
+  become: true
+
+- name: Download pip script
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp/get-pip.py
+    mode: 0440
+  become: true
+
+- name: Execute download script
+  command: "python /tmp//get-pip.py"
+  become: true
+
+- name: Install pymongo
+  pip:
+    name: pymongo
+  become: true
+
+
+- name: star mongodb database
+  command: /apps/mongodb-linux-x86_64-rhel70-3.4.3/bin/mongod  -f /apps/mongodb-linux-x86_64-rhel70-3.4.3/config/mongodb.conf
+#  command: /apps/mongodb-linux-x86_64-rhel70-3.4.3/bin/mongod  --dbpath /data/mongodb -f /apps/mongodb-linux-x86_64-rhel70-3.4.3/config/mongodb.conf --port 27017 --fork --logpath /var/log/mongodb/mongod.log
+  become: true
+
+- name: Add the admin user to the database
+  mongodb_user: database=admin name=admin password=admin login_port=27017 roles='root' state=present
+  become: true
+
+- name: Add the jmeter user to the database
+  mongodb_user:
+    database: jmeter
+    name: jmeter
+    password: jmeter
+    roles: 'readWrite'
+    state: present
+    login_port: 27017
+    login_password: admin
+    login_user: admin
+  become: true
+
+- name: populate the database
+  command: "{{ mongodb_import_exec }} --host localhost --port 27017 --username jmeter --password jmeter --collection zips --db jmeter --file /apps/mongodb-linux-x86_64-rhel70-3.4.3/scripts/zips.json"
+
+#- name: populate the database
+#  command: "find {{ mongodb_scripts_path }}  -type f -name {{ scripts_type }} -exec {{ mongodb_import_exec }} --host localhost --port {{ mongodb_port }} --username {{ mongodb_username }} --password {{ mongodb_username }} --collection {{ mongodb_collection }} --db {{ mongodb_database_name }} --file {} \\;"
